@@ -19,10 +19,20 @@
 
     <style name="Theme.Bacon" parent="@style/Theme.AppCompat.Light.NoActionBar">
 
+        <item name="android:colorPrimary">@color/theme_primary</item>
+        <item name="android:colorPrimaryDark">@color/theme_primary_dark</item>
+        <item name="android:colorAccent">@color/theme_primary_dark</item>
+
+        <item name="android:textColor">@color/theme_text_color</item>
+
     </style>
 
     <style name="Theme.Bacon.Detail">
         <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.Bacon.Subtitle" parent="TextAppearance.AppCompat.Subhead">
+        <item name="android:textColor">@color/theme_text_color</item>
     </style>
 
 </resources>
