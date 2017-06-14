@@ -16,10 +16,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.graphics.Palette;
 import android.text.Html;
+import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -66,6 +69,10 @@ public class ArticleDetailFragment extends Fragment implements
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
     // Most time functions can only handle 1902 - 2037
     private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
+
+    private TextView bodyView;
+    private TextView titleView;
+    private TextView bylineView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -200,10 +207,10 @@ public class ArticleDetailFragment extends Fragment implements
             return;
         }
 
-        TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
-        TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
+        titleView = (TextView) mRootView.findViewById(R.id.article_title);
+        bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
-        TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
+        bodyView = (TextView) mRootView.findViewById(R.id.article_body);
 
 
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
@@ -232,7 +239,8 @@ public class ArticleDetailFragment extends Fragment implements
                                 + "</font>"));
 
             }
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
+            loadBody(mCursor.getString(ArticleLoader.Query.BODY));
+//            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
@@ -259,6 +267,44 @@ public class ArticleDetailFragment extends Fragment implements
             bylineView.setText("N/A" );
             bodyView.setText("N/A");
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void loadBody(final String body) {
+        new AsyncTask<String, Void, Spanned>(){
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                bodyView.setText("Loading");
+            }
+
+            @Override
+            protected Spanned doInBackground(String... strings) {
+                String body = strings[0];
+
+                body = body.replaceAll("(\r\n|\n)", "<br />").substring(0, 2000);
+
+                Spanned spanned;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    spanned = Html.fromHtml(body, Html.FROM_HTML_MODE_LEGACY);
+                } else {
+                    spanned = Html.fromHtml(body);
+                }
+
+                return spanned;
+            }
+
+            @Override
+            protected void onPostExecute(final Spanned s) {
+                super.onPostExecute(s);
+                Log.d(TAG, "Text size: " + String.valueOf(s.toString().length()));
+                long initial = System.currentTimeMillis();
+                bodyView.setText(s);
+                long finale = System.currentTimeMillis();
+                Log.d(TAG, "Time: " + String.valueOf(finale - initial));
+            }
+        }.execute(body);
     }
 
     @Override
