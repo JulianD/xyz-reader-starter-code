@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.xyzreader.R;
+import com.example.xyzreader.model.Article;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,12 @@ import java.util.List;
  * Created by radsen on 6/14/17.
  */
 
-public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHolder> {
+public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private static final int TYPE_HEADER = 0;
+    private static final int TYPE_CONTENT = 1;
+
+    private Article mArticle;
 
     private List<Spanned> paragraphs;
 
@@ -24,26 +30,67 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
         paragraphs = new ArrayList<>();
     }
 
-    @Override
-    public ArticleAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_paragraph, parent, false);
-        return new ViewHolder(view);
+    public ArticleAdapter(Article article) {
+        mArticle = article;
     }
 
     @Override
-    public void onBindViewHolder(ArticleAdapter.ViewHolder holder, int position) {
-        Spanned paragraph = paragraphs.get(position);
-        holder.tvParagraph.setText(paragraph);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+        View view = null;
+        RecyclerView.ViewHolder vh = null;
+
+        switch (viewType){
+            case TYPE_HEADER:
+                view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_header, parent, false);
+                vh = new VHHeader(view);
+                break;
+            case TYPE_CONTENT:
+                view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_paragraph, parent, false);
+                vh = new VHContent(view);
+                break;
+        }
+
+        return vh;
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if(holder instanceof VHHeader){
+            VHHeader header = (VHHeader) holder;
+            header.tvTitle.setText(mArticle.getTitle());
+            header.tvByLine.setText(mArticle.getByLine());
+        } else if (holder instanceof VHContent){
+            VHContent content = (VHContent) holder;
+            Spanned paragraph = paragraphs.get(position - 1);
+            content.tvParagraph.setText(paragraph);
+        }
     }
 
     @Override
     public int getItemCount() {
-        if(paragraphs == null){
-            return 0;
+        int count = 0;
+
+        if(mArticle != null){
+            count++;
         }
 
-        return paragraphs.size();
+        if(paragraphs != null){
+            return count + paragraphs.size();
+        }
+
+        return count;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if(position == 0){
+            return TYPE_HEADER;
+        }
+
+        return TYPE_CONTENT;
     }
 
     public void swap(List<Spanned> list) {
@@ -54,10 +101,21 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
         notifyDataSetChanged();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvParagraph;
+    public class VHHeader extends RecyclerView.ViewHolder {
+        private TextView tvByLine;
+        private TextView tvTitle;
 
-        public ViewHolder(View itemView) {
+        public VHHeader(View itemView) {
+            super(itemView);
+            tvTitle = (TextView) itemView.findViewById(R.id.article_title);
+            tvByLine = (TextView) itemView.findViewById(R.id.article_byline);
+        }
+    }
+
+    public class VHContent extends RecyclerView.ViewHolder {
+        private TextView tvParagraph;
+
+        public VHContent(View itemView) {
             super(itemView);
             tvParagraph = (TextView) itemView.findViewById(R.id.article_body);
         }

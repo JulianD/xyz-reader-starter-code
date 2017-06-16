@@ -26,6 +26,7 @@ import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
 import com.example.xyzreader.data.UpdaterService;
+import com.example.xyzreader.model.Article;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -45,12 +46,6 @@ public class ArticleListActivity extends ActionBarActivity implements
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
-
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
-    // Use default locale format
-    private SimpleDateFormat outputFormat = new SimpleDateFormat();
-    // Most time functions can only handle 1902 - 2037
-    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
 
     private AppCompatActivity activity;
 
@@ -128,6 +123,7 @@ public class ArticleListActivity extends ActionBarActivity implements
     }
 
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
+
         private Cursor mCursor;
 
         public Adapter(Cursor cursor) {
@@ -147,37 +143,13 @@ public class ArticleListActivity extends ActionBarActivity implements
             return vh;
         }
 
-        private Date parsePublishedDate() {
-            try {
-                String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
-                return dateFormat.parse(date);
-            } catch (ParseException ex) {
-                Log.e(TAG, ex.getMessage());
-                Log.i(TAG, "passing today's date");
-                return new Date();
-            }
-        }
-
         @Override
         public void onBindViewHolder(final ViewHolder holder, final int position) {
             mCursor.moveToPosition(position);
+            final Article article = Article.create(mCursor);
+            article.setPosition(position);
             holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-            Date publishedDate = parsePublishedDate();
-            if (!publishedDate.before(START_OF_EPOCH.getTime())) {
-
-                holder.subtitleView.setText(Html.fromHtml(
-                        DateUtils.getRelativeTimeSpanString(
-                                publishedDate.getTime(),
-                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                                DateUtils.FORMAT_ABBREV_ALL).toString()
-                                + "<br/>" + " by "
-                                + mCursor.getString(ArticleLoader.Query.AUTHOR)));
-            } else {
-                holder.subtitleView.setText(Html.fromHtml(
-                        outputFormat.format(publishedDate)
-                        + "<br/>" + " by "
-                        + mCursor.getString(ArticleLoader.Query.AUTHOR)));
-            }
+            holder.subtitleView.setText(article.getByLine());
             holder.thumbnailView.setImageUrl(
                     mCursor.getString(ArticleLoader.Query.THUMB_URL),
                     ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
@@ -188,10 +160,11 @@ public class ArticleListActivity extends ActionBarActivity implements
                 public void onClick(View view) {
                     String transitionName = String.valueOf(getItemId(holder.getAdapterPosition()));
                     Bundle bundle = ActivityOptionsCompat
-                            .makeSceneTransitionAnimation(activity, holder.thumbnailView, transitionName)
+                            .makeSceneTransitionAnimation(activity,
+                                    holder.thumbnailView, transitionName)
                             .toBundle();
-                    Intent intent = new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(holder.getAdapterPosition())));
+                    Intent intent = new Intent(activity, ArticleDetailActivity.class);
+                    intent.putExtra(Article.KEY, article);
                     startActivity(intent, bundle);
                 }
             });
