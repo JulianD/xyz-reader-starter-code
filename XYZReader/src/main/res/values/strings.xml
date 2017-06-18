@@ -9,5 +9,7 @@
 
     <string name="up">Up</string>
     <string name="transition_photo">clicked_photo</string>
+    <string name="mock_title">A Very Long Title For A Book Or Article</string>
+    <string name="mock_by_line">May 1, 1953 by Mark Roberts</string>
 
 </resources>

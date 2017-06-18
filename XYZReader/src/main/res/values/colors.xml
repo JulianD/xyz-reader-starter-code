@@ -24,4 +24,6 @@
     <color name="ltgray">#ffe0e0e0</color>
     <color name="theme_text_color">#000000</color>
     <color name="theme_text_color_body">#616161</color>
+    <color name="selected_article">#CE93D8</color>
+    <color name="light_black">#6000</color>
 </resources>

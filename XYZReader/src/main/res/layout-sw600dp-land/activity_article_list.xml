@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_layout_height"
+        android:background="@color/theme_primary"
+        android:gravity="top">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/app_name"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:src="@drawable/logo"/>
+
+    </android.support.v7.widget.Toolbar>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <fragment
+            android:id="@+id/detail"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="?actionBarSize"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_weight="2"
+            android:name="com.example.xyzreader.ui.ArticleDetailFragment"
+            tools:layout="@layout/fragment_article_detail"/>
+
+        <fragment
+            android:id="@+id/master"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginTop="@dimen/app_bar_layout_height"
+            android:name="com.example.xyzreader.ui.ArticleListFragment"
+            tools:layout="@layout/fragment_article_list"/>
+
+    </LinearLayout>
+
+</FrameLayout>
+

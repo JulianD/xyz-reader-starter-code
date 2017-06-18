@@ -139,6 +139,10 @@ public class Article implements Parcelable {
             Log.e(TAG, ex.getMessage());
             Log.i(TAG, "passing today's date");
             return new Date();
+        } catch (NullPointerException ex){
+            Log.e(TAG, ex.getMessage());
+            Log.i(TAG, "passing today's date");
+            return new Date();
         }
     }
 
