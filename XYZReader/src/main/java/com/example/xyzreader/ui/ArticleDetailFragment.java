@@ -1,5 +1,6 @@
 package com.example.xyzreader.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -9,6 +10,7 @@ import java.util.List;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
@@ -35,7 +37,7 @@ import com.example.xyzreader.model.Article;
  * tablets) or a {@link ArticleDetailActivity} on handsets.
  */
 public class ArticleDetailFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>, AppBarLayout.OnOffsetChangedListener {
 
     private static final String TAG = ArticleDetailFragment.class.getSimpleName();
 
@@ -46,6 +48,8 @@ public class ArticleDetailFragment extends Fragment implements
     private RecyclerView rvArticle;
     private ArticleAdapter adapter;
     private Article mArticle;
+    private AppBarLayout mBarLayout;
+    private ArticleDetailActivity activity;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -76,6 +80,15 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof ArticleDetailActivity){
+            activity = (ArticleDetailActivity) context;
+        }
+
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         Log.d(TAG, "onActivityCreated");
@@ -91,6 +104,9 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
+
+        mBarLayout = (AppBarLayout) mRootView.findViewById(R.id.barLayout);
+        mBarLayout.addOnOffsetChangedListener(this);
 
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP  && mArticle != null) {
@@ -146,12 +162,6 @@ public class ArticleDetailFragment extends Fragment implements
     @SuppressWarnings("deprecation")
     private void loadBody(final String body) {
         new AsyncTask<String, Void, List<Spanned>>(){
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-//                bodyView.setText("Loading");
-            }
 
             @Override
             protected List<Spanned> doInBackground(String... strings) {
@@ -223,5 +233,18 @@ public class ArticleDetailFragment extends Fragment implements
         Log.d(TAG, "load");
         mArticle = article;
         getLoaderManager().restartLoader(0, null, this);
+    }
+
+    @Override
+    public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+        if(verticalOffset == 0){
+            Log.d(TAG, "It's expanded");
+            activity.showHomeButton();
+        } else if (Math.abs(verticalOffset) >= appBarLayout.getTotalScrollRange()) {
+            Log.d(TAG, "It's collapsed");
+            activity.hideHomeButton();
+        } else {
+            Log.d(TAG, "It's idle");
+        }
     }
 }

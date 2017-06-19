@@ -135,6 +135,14 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPagerAdapter.notifyDataSetChanged();
     }
 
+    public void hideHomeButton() {
+        mUpButton.setVisibility(View.GONE);
+    }
+
+    public void showHomeButton() {
+        mUpButton.setVisibility(View.VISIBLE);
+    }
+
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
         public MyPagerAdapter(FragmentManager fm) {
             super(fm);

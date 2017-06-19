@@ -11,13 +11,15 @@
         CoordinatorLayout and the AppBar at the bottom and add layout_behaviour in the properties
         of RecyclerView
      -->
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_article"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-        <android.support.design.widget.AppBarLayout
+    <android.support.design.widget.AppBarLayout
+            android:id="@+id/barLayout"
             android:layout_width="match_parent"
             android:layout_height="@dimen/app_bar_layout_height"
             android:background="@color/theme_primary">
