@@ -21,8 +21,7 @@
     <android.support.design.widget.AppBarLayout
             android:id="@+id/barLayout"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/app_bar_layout_height"
-            android:background="@color/theme_primary">
+            android:layout_height="@dimen/app_bar_layout_height">
 
             <android.support.design.widget.CollapsingToolbarLayout
                 android:layout_width="match_parent"
@@ -71,10 +70,12 @@
         android:layout_height="wrap_content"
         app:backgroundTint="@color/theme_accent"
         android:layout_gravity="bottom|end"
-        android:layout_marginRight="@dimen/fab_margin"
+        android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="@dimen/fab_margin"
         android:src="@drawable/ic_share"
         android:elevation="@dimen/fab_elevation"
-        android:contentDescription="@string/action_share"/>
+        android:contentDescription="@string/action_share"
+        app:layout_behavior="com.example.xyzreader.util.ContextAwareFAB"
+        android:visibility="invisible"/>
 
 </android.support.design.widget.CoordinatorLayout>

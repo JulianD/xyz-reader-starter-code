@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@android:color/white"
-    android:elevation="4dp">
+    android:elevation="@dimen/cardview_default_elevation">
 
     <!--
         To place the RecyclerView below the AppBarLayout without using any other layout
@@ -21,7 +21,7 @@
         android:scaleType="centerCrop"
         android:background="@color/ltgray"/>
 
-    <FrameLayout
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -37,14 +37,14 @@
             android:layout_height="wrap_content"
             app:backgroundTint="@color/theme_accent"
             android:layout_gravity="bottom|end"
-            android:layout_marginRight="@dimen/fab_margin"
+            android:layout_marginEnd="@dimen/fab_margin"
             android:layout_marginBottom="@dimen/fab_margin"
             android:src="@drawable/ic_share"
             android:elevation="@dimen/fab_elevation"
-            android:contentDescription="@string/action_share"/>
+            android:contentDescription="@string/action_share"
+            app:layout_behavior="com.example.xyzreader.util.ContextAwareFAB"
+            android:visibility="invisible"/>
 
-    </FrameLayout>
-
-
+    </android.support.design.widget.CoordinatorLayout>
 
 </LinearLayout>

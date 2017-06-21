@@ -106,7 +106,9 @@ public class ArticleDetailFragment extends Fragment implements
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
 
         mBarLayout = (AppBarLayout) mRootView.findViewById(R.id.barLayout);
-        mBarLayout.addOnOffsetChangedListener(this);
+        if(mBarLayout != null){
+            mBarLayout.addOnOffsetChangedListener(this);
+        }
 
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP  && mArticle != null) {
@@ -153,7 +155,7 @@ public class ArticleDetailFragment extends Fragment implements
 
                         @Override
                         public void onErrorResponse(VolleyError volleyError) {
-
+                            Log.e(TAG, "onErrorResponse: " + volleyError.getMessage());
                         }
                     });
         }
@@ -238,13 +240,9 @@ public class ArticleDetailFragment extends Fragment implements
     @Override
     public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
         if(verticalOffset == 0){
-            Log.d(TAG, "It's expanded");
             activity.showHomeButton();
         } else if (Math.abs(verticalOffset) >= appBarLayout.getTotalScrollRange()) {
-            Log.d(TAG, "It's collapsed");
             activity.hideHomeButton();
-        } else {
-            Log.d(TAG, "It's idle");
         }
     }
 }
