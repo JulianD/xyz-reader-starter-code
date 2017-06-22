@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +16,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.Loader;
+import android.support.v4.graphics.ColorUtils;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -24,12 +27,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.model.Article;
+import com.example.xyzreader.util.ColorUtilsExt;
 
 /**
  * A fragment representing a single Article detail screen. This fragment is
@@ -44,12 +50,40 @@ public class ArticleDetailFragment extends Fragment implements
     private Cursor mCursor;
     private View mRootView;
     private ImageView mPhotoView;
+    private LinearLayout mMetaBar;
 
     private RecyclerView rvArticle;
     private ArticleAdapter adapter;
     private Article mArticle;
     private AppBarLayout mBarLayout;
     private ArticleDetailActivity activity;
+
+    private TextView mHeaderTitle;
+    private TextView mHeaderSubtitle;
+
+    private Palette.PaletteAsyncListener paletteAsyncListener = new Palette.PaletteAsyncListener() {
+        @Override
+        public void onGenerated(Palette palette) {
+            int color = 0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                color = palette.getDominantColor(getResources()
+                        .getColor(R.color.bkg_header_default, null));
+            } else {
+                color = palette.getDominantColor(getResources()
+                        .getColor(R.color.bkg_header_default));
+            }
+
+            mMetaBar = (LinearLayout) mRootView.findViewById(R.id.meta_bar);
+            mMetaBar.setBackgroundColor(color);
+
+            int oppositeColor = ColorUtilsExt.getOppositeColor(color);
+
+            mHeaderTitle = (TextView) mRootView.findViewById(R.id.article_title);
+            mHeaderTitle.setTextColor(oppositeColor);
+            mHeaderSubtitle = (TextView) mRootView.findViewById(R.id.article_byline);
+            mHeaderSubtitle.setTextColor(oppositeColor);
+        }
+    };
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -144,12 +178,16 @@ public class ArticleDetailFragment extends Fragment implements
             loadBody(mCursor.getString(ArticleLoader.Query.BODY));
 
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
-                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
+                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL),
+                            new ImageLoader.ImageListener() {
                         @Override
-                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                        public void onResponse(ImageLoader.ImageContainer imageContainer,
+                                               boolean b) {
                             Bitmap bitmap = imageContainer.getBitmap();
                             if (bitmap != null) {
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
+                                Palette.Builder pBuilder = new Palette.Builder(bitmap);
+                                pBuilder.generate(paletteAsyncListener);
                             }
                         }
 

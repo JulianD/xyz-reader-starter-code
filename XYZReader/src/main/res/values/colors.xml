@@ -26,4 +26,5 @@
     <color name="theme_text_color_body">#616161</color>
     <color name="selected_article">#CE93D8</color>
     <color name="light_black">#6000</color>
+    <color name="bkg_header_default">#333</color>
 </resources>
