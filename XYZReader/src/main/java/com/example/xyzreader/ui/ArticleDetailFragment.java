@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -131,6 +132,10 @@ public class ArticleDetailFragment extends Fragment implements
         // the fragment's onCreate may cause the same LoaderManager to be dealt to multiple
         // fragments because their mIndex is -1 (haven't been added to the activity yet). Thus,
         // we do this in onActivityCreated.
+        if(savedInstanceState != null){
+            mArticle = savedInstanceState.getParcelable(Article.KEY);
+        }
+
         getLoaderManager().restartLoader(0, null, this);
     }
 
@@ -197,6 +202,12 @@ public class ArticleDetailFragment extends Fragment implements
                         }
                     });
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(Article.KEY, mArticle);
     }
 
     @SuppressWarnings("deprecation")

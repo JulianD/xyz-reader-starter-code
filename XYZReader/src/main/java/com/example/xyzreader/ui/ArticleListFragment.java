@@ -10,8 +10,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,7 @@ import android.widget.TextView;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+import com.example.xyzreader.data.UpdaterService;
 import com.example.xyzreader.model.Article;
 
 /**
@@ -28,11 +31,18 @@ import com.example.xyzreader.model.Article;
 public class ArticleListFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final String TAG = ArticleListFragment.class.getSimpleName();
+
+    private static final String SCROLLED_POSITION = "com.udacity.xyz.scroll.position";
+    private static final String SELECTED_POSITION = "com.udacity.xyz.selected.position";
+
     private RecyclerView mRecyclerView;
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private boolean mIsRefreshing = false;
     private RecyclerViewListener listener;
+    private int mScrollPosition;
+    private int mSelPos;
 
     @Override
     public void onAttach(Context context) {
@@ -61,7 +71,31 @@ public class ArticleListFragment extends Fragment implements
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        if(savedInstanceState != null){
+            mScrollPosition = savedInstanceState.getInt(SCROLLED_POSITION, 0);
+            mSelPos = savedInstanceState.getInt(SELECTED_POSITION, Adapter.NO_SELECTION);
+        } else {
+            mSelPos = Adapter.NO_SELECTION;
+        }
+
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getActivity().startService(new Intent(getContext(), UpdaterService.class));
+            }
+        });
+
         getLoaderManager().initLoader(0, null, this);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if(getResources().getBoolean(R.bool.multipane)){
+            mScrollPosition = ((LinearLayoutManager) mRecyclerView.getLayoutManager())
+                    .findFirstCompletelyVisibleItemPosition();
+            outState.putInt(SCROLLED_POSITION, mScrollPosition);
+            outState.putInt(SELECTED_POSITION, mSelPos);
+        }
     }
 
     @Override
@@ -74,10 +108,19 @@ public class ArticleListFragment extends Fragment implements
         Adapter adapter = new Adapter(cursor);
         adapter.setHasStableIds(true);
         mRecyclerView.setAdapter(adapter);
-        int columnCount = getResources().getInteger(R.integer.list_column_count);
-        StaggeredGridLayoutManager sglm =
-                new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(sglm);
+
+        RecyclerView.LayoutManager layoutManager = null;
+        if(getResources().getBoolean(R.bool.multipane)){
+            layoutManager = new LinearLayoutManager(getContext());
+        } else {
+            int columnCount = getResources().getInteger(R.integer.list_column_count);
+            layoutManager = new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
+        }
+
+        mRecyclerView.setLayoutManager(layoutManager);
+        int selPos = (mSelPos != Adapter.NO_SELECTION) ? mSelPos : Adapter.NO_SELECTION;
+        adapter.setSelectedItem(selPos);
+        mRecyclerView.scrollToPosition(mScrollPosition);
     }
 
     @Override
@@ -85,13 +128,16 @@ public class ArticleListFragment extends Fragment implements
         mRecyclerView.setAdapter(null);
     }
 
-    private void updateRefreshingUI() {
+    public void updateRefreshingUI(boolean mIsRefreshing) {
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
     }
 
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
 
+        public static final int NO_SELECTION = -1;
+
         private Cursor mCursor;
+        private int selectedItem;
 
         public Adapter(Cursor cursor) {
             mCursor = cursor;
@@ -116,6 +162,15 @@ public class ArticleListFragment extends Fragment implements
             mCursor.moveToPosition(position);
             final Article article = Article.create(mCursor);
             article.setPosition(position);
+
+            if(getResources().getBoolean(R.bool.multipane)){
+                if(position == selectedItem){
+                    holder.itemView.setSelected(true);
+                } else {
+                    holder.itemView.setSelected(false);
+                }
+            }
+
             holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
             holder.subtitleView.setText(article.getByLine());
             holder.thumbnailView.setImageUrl(
@@ -145,6 +200,10 @@ public class ArticleListFragment extends Fragment implements
         @Override
         public int getItemCount() {
             return mCursor.getCount();
+        }
+
+        public void setSelectedItem(int selectedItem) {
+            this.selectedItem = selectedItem;
         }
     }
 

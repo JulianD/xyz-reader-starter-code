@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.UpdaterService;
@@ -23,6 +22,7 @@ public class ArticleListActivity extends AppCompatActivity implements RecyclerVi
     private static final String TAG = ArticleListActivity.class.toString();
 
     private ArticleDetailFragment fragmentArticleDetail;
+    private ArticleListFragment fragmentArticleList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +33,15 @@ public class ArticleListActivity extends AppCompatActivity implements RecyclerVi
             refresh();
         }
 
+        fragmentArticleList = (ArticleListFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.master);
+
         fragmentArticleDetail = (ArticleDetailFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.detail);
     }
 
-    private void refresh() {
-        startService(new Intent(this, UpdaterService.class));
+    public void refresh() {
+
     }
 
     @Override
@@ -58,8 +61,8 @@ public class ArticleListActivity extends AppCompatActivity implements RecyclerVi
         @Override
         public void onReceive(Context context, Intent intent) {
             if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
-//                mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
-//                updateRefreshingUI();
+                boolean isRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
+                fragmentArticleList.updateRefreshingUI(isRefreshing);
             }
         }
     };
